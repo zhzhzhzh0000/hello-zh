@@ -1,0 +1,117 @@
+var pagination = function(all, pernum, page, href, pref, extattrs){
+				pernum = getDefalut(pernum, 10);
+				page = getDefalut(page, 1);
+				href = getDefalut(href, '?id=');
+				pref = getDefalut(pref, '...');
+				extattrs = getDefalut(extattrs, '');
+
+				var cnum = 5, //中间留5个
+					num = 0,
+					i = 0,
+					thref = '',
+					pageArr = [],
+					total = Math.ceil(all / pernum);
+
+				total = Math.max(total, 1);
+				if(total<=cnum || page<cnum+1){ //如果总数小于cnum或当前页小于cnum
+					for(i=0; i<=cnum; i++){
+						if(i+1>total){
+							break;
+						}
+						pageArr.push(i+1);
+					}
+				}else if(page-1>=total-cnum){ //如果当前页在最后cnum页
+					for(i=total-cnum; i<=total; i++){
+						pageArr.push(i);
+					}
+				}else{ //否则当前页在中间
+					num = page-3;
+					num = num < 1 ? 1 : num;
+					for(i=0; i<cnum; i++){
+						num += 1;
+						if(num>total){
+							break;
+						}
+						pageArr.push(num);
+					}
+				}
+
+				if(pageArr[0]!=1){ //头添加第一页
+					pageArr.unshift(false);
+					pageArr.unshift(1);
+				}
+
+				i = pageArr[pageArr.length-1];
+				if(i!=total){ //尾添加最后一页
+					if(i+1!=total){
+						pageArr.push(false);
+					}
+					pageArr.push(total);
+				}
+
+				for(i=0; i<pageArr.length; i++){
+					num = pageArr[i];
+					if(!num){
+						pageArr[i] = '<span>'+pref+'</span>';
+					}else{
+						thref = href.replace('{page}', num);
+						pageArr[i] = '<a class="page-btn'+(num==page?' cur' : '')+'" data-total="'+total+'" data-page="'+num+'" href="'+thref+'" hidefocus=true '+extattrs+' >'+num+'</a>';
+					}
+				}
+				//添加上一页
+				var text = 'javascript:void(0)',
+					fprev = 1>=page,
+					fnext = total<=page,
+					prevText = '',
+					nextText = '';
+
+				thref = href.replace('{page}', page-1);
+				prevText = '<a class="page-prev'+(fprev ? ' prev-disabled':'')+'" data-total="'+total+'" data-page="'+(page-1)+'" href="'+(fprev ? text : thref)+'" hidefocus=true '+extattrs+' >上一页</a>';
+				thref = href.replace('{page}', page+1);
+				nextText = '<a class="page-next'+(fnext ? ' next-disabled':'')+'" data-total="'+total+'" data-page="'+(page+1)+'" href="'+(fnext ? text : thref)+'" hidefocus=true '+extattrs+' >下一页</a>';
+				
+				pageArr.unshift(prevText);
+				pageArr.push(nextText);
+				return pageArr.join('');
+			};
+      
+      var data = tdataList,
+					pageNum = 2;
+					var renderHtml = function(curpage){
+						var html = '<ul>', total = data.length;
+						for (var i = (curpage-1)*pageNum; i<(curpage*pageNum); i++) {
+							if(i>=total){
+								break;
+							}
+							html += '<li><p>'+amsPackageId[data[i].iPackageId]+'</p><p>礼包内容：<span class="package" title="'+(String(data[i].content).length>15?amsPackageIdlist[data[i].iPackageId]:"")+'">'+data[i].content+'<span></p><p>获得时间：<span class="vld">'+data[i].time.substr(0,10)+'<span></p></li>';
+						}
+						
+						html += '</ul>';
+						var gift=$(".gift");
+						gift.show();
+						if(data==0){
+							$("#gift_footer").show();
+							$("#pagination,#fdesc").hide();
+						}else{
+							$('#data-container').html(html);
+							$("#fdesc").html(curpage+'/'+Math.ceil(total/2));
+						}
+						$('#pagination').html(pagination(data.length, pageNum, curpage, 'javascript:void(0);'));	
+					};
+
+					$('#pagination').off().on('click', '[data-page]', function(){
+						var $this = $(this),
+							curpage = $this.data('page'),
+							total = $this.data('total');
+
+						if($this.hasClass('next-disabled') || $this.hasClass('prev-disabled')){
+							return false;
+						}
+
+						//渲染内容
+						renderHtml(curpage);
+						$("#fdesc").html(curpage+'/'+total);	
+						console.log(curpage+'/'+total);
+					});
+					renderHtml(1);
+				}

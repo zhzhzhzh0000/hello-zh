@@ -1,3 +1,6 @@
+var getDefalut = function(parma, dval){
+	return typeof parma=='undefined' ? dval : parma;
+};
 var pagination = function(all, pernum, page, href, pref, extattrs){
 				pernum = getDefalut(pernum, 10);
 				page = getDefalut(page, 1);
